@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>BSIT A002 Section Attendance</title>
+
+    <!-- Tesseract OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            color: white;
+
+            background:
+                linear-gradient(
+                    rgba(0,0,0,0.86),
+                    rgba(35,0,0,0.92)
+                ),
+                url("background.jpg");
+
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    circle at 20% 20%,
+                    rgba(255,0,0,0.12),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 80% 80%,
+                    rgba(255,0,0,0.10),
+                    transparent 30%
+                );
+
+            pointer-events: none;
+            z-index: -1;
+
+            animation: bgPulse 5s infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            from {
+                opacity: .5;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            padding: 18px 25px;
+
+            background:
+                rgba(0,0,0,.94);
+
+            border-bottom:
+                2px solid #e00000;
+
+            box-shadow:
+                0 0 25px
+                rgba(255,0,0,.30);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: auto;
+
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .logo {
+            width: 65px;
+            height: 65px;
+
+            object-fit: contain;
+
+            border-radius: 10px;
+
+            filter:
+                drop-shadow(
+                    0 0 10px
+                    rgba(255,0,0,.7)
+                );
+        }
+
+        .header-text h1 {
+            color: #ff2020;
+            font-size: 25px;
+            letter-spacing: 1px;
+        }
+
+        .header-text p {
+            color: #999;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .container {
+            width: 94%;
+            max-width: 1200px;
+
+            margin:
+                30px auto 60px;
+        }
+
+
+        /* =========================
+           STATISTICS
+        ========================= */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            padding: 22px;
+
+            background:
+                rgba(8,8,8,.92);
+
+            border:
+                1px solid #400000;
+
+            border-left:
+                5px solid #e00000;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 0 20px
+                rgba(255,0,0,.10);
+
+            transition: .3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+
+            border-color:
+                #ff2222;
+
+            box-shadow:
+                0 0 25px
+                rgba(255,0,0,.25);
+        }
+
+        .stat-card span {
+            display: block;
+
+            color: #999;
+
+            font-size: 12px;
+
+            margin-bottom: 8px;
+        }
+
+        .stat-card strong {
+            color: #ff2222;
+
+            font-size: 30px;
+        }
+
+
+        /* =========================
+           PANEL
+        ========================= */
+
+        .panel {
+            padding: 25px;
+
+            margin-bottom: 25px;
+
+            background:
+                rgba(5,5,5,.94);
+
+            border:
+                1px solid #3d0000;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 0 25px
+                rgba(255,0,0,.10);
+        }
+
+        .panel-title {
+            color: #ff2222;
+
+            font-size: 20px;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 20px;
+        }
+
+
+        /* =========================
+           CAMERA
+        ========================= */
+
+        .camera-box {
+            position: relative;
+
+            width: 100%;
+            max-width: 900px;
+
+            aspect-ratio: 16 / 9;
+
+            margin: auto;
+
+            overflow: hidden;
+
+            background: #000;
+
+            border:
+                2px solid #a90000;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 0 30px
+                rgba(255,0,0,.20);
+        }
+
+        #camera {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+
+        /* =========================
+           SCAN FRAME
+        ========================= */
+
+        .scan-frame {
+            position: absolute;
+
+            top: 10%;
+            left: 7%;
+
+            width: 86%;
+            height: 80%;
+
+            pointer-events: none;
+        }
+
+        .corner {
+            position: absolute;
+
+            width: 55px;
+            height: 55px;
+
+            border-color: #ff2222;
+            border-style: solid;
+
+            filter:
+                drop-shadow(
+                    0 0 8px
+                    rgba(255,0,0,.9)
+                );
+        }
+
+        .top-left {
+            top: 0;
+            left: 0;
+
+            border-width:
+                4px 0 0 4px;
+        }
+
+        .top-right {
+            top: 0;
+            right: 0;
+
+            border-width:
+                4px 4px 0 0;
+        }
+
+        .bottom-left {
+            bottom: 0;
+            left: 0;
+
+            border-width:
+                0 0 4px 4px;
+        }
+
+        .bottom-right {
+            bottom: 0;
+            right: 0;
+
+            border-width:
+                0 4px 4px 0;
+        }
+
+
+        /* =========================
+           SCAN LINE
+        ========================= */
+
+        .scan-line {
+            position: absolute;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 3px;
+
+            background: #ff1111;
+
+            box-shadow:
+                0 0 15px #ff1111,
+                0 0 30px #ff1111;
+
+            animation:
+                scanAnimation 2s
+                linear infinite;
+        }
+
+        @keyframes scanAnimation {
+
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+
+        }
+
+
+        /* =========================
+           CAMERA BUTTONS
+        ========================= */
+
+        .camera-buttons {
+            display: flex;
+
+            justify-content: center;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
+
+            margin-top: 20px;
+        }
+
+        button {
+            padding:
+                12px 22px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #870000,
+                    #e00000
+                );
+
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: .25s;
+        }
+
+        button:hover {
+            transform:
+                translateY(-2px);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #c00000,
+                    #ff2222
+                );
+
+            box-shadow:
+                0 0 18px
+                rgba(255,0,0,.35);
+        }
+
+        button:disabled {
+            background: #333;
+
+            color: #777;
+
+            cursor: not-allowed;
+
+            transform: none;
+
+            box-shadow: none;
+        }
+
+        .stop-button {
+            background: #292929;
+        }
+
+
+        /* =========================
+           STATUS
+        ========================= */
+
+        .ocr-status {
+            min-height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-top: 18px;
+
+            padding: 13px;
+
+            text-align: center;
+
+            color: #ddd;
+
+            background:
+                #151515;
+
+            border:
+                1px solid #333;
+
+            border-radius: 8px;
+        }
+
+
+        /* =========================
+           SCAN RESULTS
+        ========================= */
+
+        .scan-result {
+            display: grid;
+
+            grid-template-columns:
+                1.5fr 1fr 1.5fr;
+
+            gap: 15px;
+
+            margin-top: 20px;
+        }
+
+        .result-box {
+            padding: 18px;
+
+            background:
+                #111;
+
+            border-left:
+                4px solid #e00000;
+
+            border-radius: 8px;
+        }
+
+        .result-box span {
+            display: block;
+
+            color: #888;
+
+            font-size: 11px;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 7px;
+        }
+
+        .result-box strong {
+            color: white;
+
+            font-size: 18px;
+
+            word-break: break-word;
+        }
+
+
+        /* =========================
+           MANUAL ADD
+        ========================= */
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                1.5fr 1fr 1fr auto;
+
+            gap: 12px;
+        }
+
+        input,
+        select {
+            width: 100%;
+
+            padding:
+                13px 15px;
+
+            background:
+                #111;
+
+            color: white;
+
+            border:
+                1px solid #3b3b3b;
+
+            border-radius: 8px;
+
+            outline: none;
+
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            border-color:
+                #e00000;
+
+            box-shadow:
+                0 0 10px
+                rgba(255,0,0,.15);
+        }
+
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        .search-box {
+            margin-bottom: 18px;
+        }
+
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-wrapper {
+            width: 100%;
+
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+
+            min-width: 850px;
+
+            border-collapse:
+                collapse;
+        }
+
+        th {
+            padding: 14px;
+
+            text-align: left;
+
+            background:
+                #6f0000;
+
+            color: white;
+
+            font-size: 12px;
+        }
+
+        td {
+            padding: 13px 14px;
+
+            border-bottom:
+                1px solid #292929;
+
+            color: #ddd;
+
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background:
+                rgba(255,0,0,.05);
+        }
+
+
+        /* =========================
+           PRESENT STATUS
+        ========================= */
+
+        .present {
+            display: inline-block;
+
+            padding:
+                5px 10px;
+
+            color: #42e98b;
+
+            background:
+                rgba(0,160,70,.15);
+
+            border:
+                1px solid
+                rgba(0,255,100,.25);
+
+            border-radius: 20px;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================
+           DELETE
+        ========================= */
+
+        .delete-btn {
+            padding:
+                7px 12px;
+
+            background:
+                #470000;
+
+            font-size: 11px;
+        }
+
+        .delete-btn:hover {
+            background:
+                #d00000;
+        }
+
+
+        /* =========================
+           EMPTY
+        ========================= */
+
+        .empty-message {
+            text-align: center;
+
+            padding: 35px;
+
+            color: #777;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            padding: 25px;
+
+            text-align: center;
+
+            color: #666;
+
+            font-size: 13px;
+        }
+
+
+        #captureCanvas {
+            display: none;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 850px) {
+
+            .stats {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .scan-result {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .form-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .camera-buttons {
+                flex-direction: column;
+            }
+
+            .camera-buttons button {
+                width: 100%;
+            }
+
+            .header-content {
+                align-items: flex-start;
+            }
+
+            .header-text h1 {
+                font-size: 18px;
+            }
+
+            .camera-box {
+                aspect-ratio: 4 / 3;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+
+    <div class="header-content">
+
+        <img
+            src="image2.png"
+            class="logo"
+            alt="BSIT Logo"
+        >
+
+        <div class="header-text">
+
+            <h1>
+                BSIT A002 SECTION ATTENDANCE
+            </h1>
+
+            <p>
+                ICCT COLLEGES
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="container">
+
+
+    <!-- =========================
+         STATISTICS
+    ========================= -->
+
+    <div class="stats">
+
+        <div class="stat-card">
+
+            <span>
+                TOTAL STUDENTS
+            </span>
+
+            <strong id="totalStudents">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                PRESENT
+            </span>
+
+            <strong id="presentStudents">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                ABSENT
+            </span>
+
+            <strong id="absentStudents">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         ID SCANNER
+    ========================= -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            STUDENT ID CARD SCANNER
+        </div>
+
+
+        <div class="camera-box">
+
+            <video
+                id="camera"
+                autoplay
+                playsinline
+                muted
+            ></video>
+
+
+            <div class="scan-frame">
+
+                <div
+                    class="corner top-left">
+                </div>
+
+                <div
+                    class="corner top-right">
+                </div>
+
+                <div
+                    class="corner bottom-left">
+                </div>
+
+                <div
+                    class="corner bottom-right">
+                </div>
+
+                <div class="scan-line"></div>
+
+            </div>
+
+        </div>
+
+
+        <canvas
+            id="captureCanvas">
+        </canvas>
+
+
+        <div class="camera-buttons">
+
+            <button
+                id="startCamera"
+                onclick="startCamera()"
+            >
+                START CAMERA
+            </button>
+
+
+            <button
+                id="scanID"
+                onclick="scanIDCard()"
+                disabled
+            >
+                SCAN ID CARD
+            </button>
+
+
+            <button
+                class="stop-button"
+                onclick="stopCamera()"
+            >
+                STOP CAMERA
+            </button>
+
+        </div>
+
+
+        <div
+            class="ocr-status"
+            id="ocrStatus"
+        >
+            Camera is off.
+        </div>
+
+
+        <!-- SCANNED INFORMATION -->
+
+        <div class="scan-result">
+
+
+            <div class="result-box">
+
+                <span>
+                    STUDENT NAME
+                </span>
+
+                <strong id="detectedName">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <span>
+                    COURSE
+                </span>
+
+                <strong id="detectedCourse">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <span>
+                    ID NUMBER
+                </span>
+
+                <strong id="detectedID">
+                    ---
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         MANUAL ADD
+    ========================= -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            ADD STUDENT MANUALLY
+        </div>
+
+
+        <div class="form-grid">
+
+            <input
+                type="text"
+                id="manualName"
+                placeholder="Student Name"
+            >
+
+
+            <input
+                type="text"
+                id="manualCourse"
+                placeholder="Course"
+                value="BSIT"
+            >
+
+
+            <input
+                type="text"
+                id="manualID"
+                placeholder="ID Number"
+            >
+
+
+            <button
+                onclick="addManualStudent()"
+            >
+                ADD
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         ATTENDANCE RECORD
+    ========================= -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            ATTENDANCE RECORD
+        </div>
+
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search name, course, or ID number..."
+                oninput="renderStudents()"
+            >
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            STUDENT NAME
+                        </th>
+
+                        <th>
+                            COURSE
+                        </th>
+
+                        <th>
+                            ID NUMBER
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                        <th>
+                            TIME
+                        </th>
+
+                        <th>
+                            DATE
+                        </th>
+
+                        <th>
+                            ACTION
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody
+                    id="studentTable"
+                >
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<footer>
+
+    BSIT A002 Attendance System
+
+</footer>
+
+
+
+<script>
+
+
+/* =========================================
+   CAMERA VARIABLES
+========================================= */
+
+let cameraStream = null;
+
+let isScanning = false;
+
+
+const video =
+    document.getElementById(
+        "camera"
+    );
+
+
+const canvas =
+    document.getElementById(
+        "captureCanvas"
+    );
+
+
+const ctx =
+    canvas.getContext("2d");
+
+
+const startButton =
+    document.getElementById(
+        "startCamera"
+    );
+
+
+const scanButton =
+    document.getElementById(
+        "scanID"
+    );
+
+
+const statusText =
+    document.getElementById(
+        "ocrStatus"
+    );
+
+
+const detectedName =
+    document.getElementById(
+        "detectedName"
+    );
+
+
+const detectedCourse =
+    document.getElementById(
+        "detectedCourse"
+    );
+
+
+const detectedID =
+    document.getElementById(
+        "detectedID"
+    );
+
+
+
+/* =========================================
+   DATABASE
+========================================= */
+
+function getStudents() {
+
+    return JSON.parse(
+        localStorage.getItem(
+            "bsitA002Students"
+        ) || "[]"
+    );
+
+}
+
+
+function saveStudents(
+    students
+) {
+
+    localStorage.setItem(
+        "bsitA002Students",
+        JSON.stringify(
+            students
+        )
+    );
+
+}
+
+
+
+/* =========================================
+   START CAMERA
+========================================= */
+
+async function startCamera() {
+
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices
+            .getUserMedia
+    ) {
+
+        statusText.innerText =
+            "Camera is not supported by this browser.";
+
+        return;
+    }
+
+
+    stopCamera(false);
+
+
+    try {
+
+        statusText.innerText =
+            "Requesting camera permission...";
+
+
+        const constraints = {
+
+            video: {
+
+                facingMode: {
+                    ideal:
+                        "environment"
+                },
+
+                width: {
+                    ideal:
+                        1920
+                },
+
+                height: {
+                    ideal:
+                        1080
+                },
+
+                frameRate: {
+                    ideal:
+                        30
+                }
+
+            },
+
+            audio: false
+
+        };
+
+
+        cameraStream =
+            await navigator.mediaDevices
+                .getUserMedia(
+                    constraints
+                );
+
+
+        video.srcObject =
+            cameraStream;
+
+
+        await video.play();
+
+
+        startButton.disabled =
+            true;
+
+
+        scanButton.disabled =
+            false;
+
+
+        statusText.innerText =
+            "Camera ready. Place the ID card inside the red frame.";
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+
+        startButton.disabled =
+            false;
+
+
+        scanButton.disabled =
+            true;
+
+
+        if (
+            error.name ===
+            "NotAllowedError"
+        ) {
+
+            statusText.innerText =
+                "Camera permission denied. Allow camera access.";
+
+        }
+
+        else if (
+            error.name ===
+            "NotFoundError"
+        ) {
+
+            statusText.innerText =
+                "No camera was found.";
+
+        }
+
+        else if (
+            error.name ===
+            "NotReadableError"
+        ) {
+
+            statusText.innerText =
+                "Camera is already being used by another application.";
+
+        }
+
+        else {
+
+            statusText.innerText =
+                "Unable to start camera.";
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================
+   STOP CAMERA
+========================================= */
+
+function stopCamera(
+    showMessage = true
+) {
+
+    if (cameraStream) {
+
+        cameraStream
+            .getTracks()
+            .forEach(
+                track => {
+                    track.stop();
+                }
+            );
+
+
+        cameraStream = null;
+
+    }
+
+
+    video.srcObject = null;
+
+
+    startButton.disabled =
+        false;
+
+
+    scanButton.disabled =
+        true;
+
+
+    if (showMessage) {
+
+        statusText.innerText =
+            "Camera is off.";
+
+    }
+
+}
+
+
+
+/* =========================================
+   SCAN ID CARD
+========================================= */
+
+async function scanIDCard() {
+
+    if (!cameraStream) {
+
+        statusText.innerText =
+            "Please start the camera first.";
+
+        return;
+    }
+
+
+    if (isScanning) {
+        return;
+    }
+
+
+    isScanning = true;
+
+    scanButton.disabled =
+        true;
+
+
+    detectedName.innerText =
+        "SCANNING...";
+
+
+    detectedCourse.innerText =
+        "SCANNING...";
+
+
+    detectedID.innerText =
+        "SCANNING...";
+
+
+    try {
+
+        statusText.innerText =
+            "Capturing ID card...";
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    300
+                )
+        );
+
+
+        if (
+            video.readyState < 2
+        ) {
+
+            throw new Error(
+                "Camera is not ready."
+            );
+
+        }
+
+
+        const width =
+            video.videoWidth;
+
+
+        const height =
+            video.videoHeight;
+
+
+        if (
+            !width ||
+            !height
+        ) {
+
+            throw new Error(
+                "Camera resolution unavailable."
+            );
+
+        }
+
+
+        canvas.width =
+            width;
+
+
+        canvas.height =
+            height;
+
+
+        /*
+            Capture the current
+            camera frame.
+        */
+
+        ctx.drawImage(
+            video,
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        statusText.innerText =
+            "Reading ID card text...";
+
+
+        const result =
+            await Tesseract.recognize(
+
+                canvas,
+
+                "eng",
+
+                {
+
+                    logger:
+                        function(info) {
+
+                            if (
+                                info.status ===
+                                "recognizing text"
+                            ) {
+
+                                const progress =
+                                    Math.round(
+                                        info.progress *
+                                        100
+                                    );
+
+
+                                statusText.innerText =
+                                    "Reading ID card... " +
+                                    progress +
+                                    "%";
+
+                            }
+
+                        }
+
+                }
+
+            );
+
+
+        const text =
+            result.data.text;
+
+
+        console.log(
+            "========== OCR RESULT =========="
+        );
+
+        console.log(text);
+
+        console.log(
+            "================================="
+        );
+
+
+        if (
+            !text ||
+            text.trim().length < 3
+        ) {
+
+            throw new Error(
+                "No readable text detected."
+            );
+
+        }
+
+
+        /*
+            Extract:
+
+            NAME
+            COURSE
+            ID
+        */
+
+        const studentInfo =
+            extractStudentInfo(
+                text
+            );
+
+
+        const studentName =
+            studentInfo.name;
+
+
+        const studentCourse =
+            studentInfo.course;
+
+
+        const studentID =
+            studentInfo.id;
+
+
+        console.log(
+            "NAME:",
+            studentName
+        );
+
+
+        console.log(
+            "COURSE:",
+            studentCourse
+        );
+
+
+        console.log(
+            "ID:",
+            studentID
+        );
+
+
+        /* =========================
+           DISPLAY RESULTS
+        ========================= */
+
+        detectedName.innerText =
+            studentName ||
+            "NOT FOUND";
+
+
+        detectedCourse.innerText =
+            studentCourse ||
+            "NOT FOUND";
+
+
+        detectedID.innerText =
+            studentID ||
+            "NOT FOUND";
+
+
+        /* =========================
+           VALIDATION
+        ========================= */
+
+        if (!studentName) {
+
+            statusText.innerText =
+                "Student name was not detected. Try again with the ID card clearer.";
+
+            return;
+        }
+
+
+        if (!studentCourse) {
+
+            statusText.innerText =
+                "Course was not detected.";
+
+            return;
+        }
+
+
+        if (!studentID) {
+
+            statusText.innerText =
+                "ID number was not detected.";
+
+            return;
+        }
+
+
+        /* =========================
+           RECORD ATTENDANCE
+        ========================= */
+
+        recordAttendance(
+
+            studentName,
+
+            studentCourse,
+
+            studentID
+
+        );
+
+
+        statusText.innerText =
+            "ID successfully scanned. Attendance recorded.";
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "SCAN ERROR:",
+            error
+        );
+
+
+        detectedName.innerText =
+            "---";
+
+
+        detectedCourse.innerText =
+            "---";
+
+
+        detectedID.innerText =
+            "---";
+
+
+        statusText.innerText =
+            "Scan failed. Make sure the ID card is clear and inside the frame.";
+
+    }
+
+
+    finally {
+
+        isScanning = false;
+
+
+        if (cameraStream) {
+
+            scanButton.disabled =
+                false;
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================
+   EXTRACT STUDENT INFORMATION
+========================================= */
+
+function extractStudentInfo(
+    text
+) {
+
+    /*
+        Example OCR:
+
+        RAVENA, HAWY
+        BSIT
+        CA202605693
+    */
+
+
+    let lines =
+        text
+            .split(/\r?\n/)
+            .map(
+                line =>
+                    line
+                        .trim()
+            )
+            .filter(
+                line =>
+                    line.length > 0
+            );
+
+
+    /*
+        Clean OCR mistakes
+    */
+
+    lines =
+        lines.map(
+            line => {
+
+                return line
+                    .replace(
+                        /[|]/g,
+                        "I"
+                    )
+                    .replace(
+                        /\s+/g,
+                        " "
+                    )
+                    .trim();
+
+            }
+        );
+
+
+    const fullText =
+        lines.join(" ");
+
+
+    let name = "";
+
+    let course = "";
+
+    let id = "";
+
+
+    /* =====================================
+       FIND ID
+       
+       Target example:
+       CA202605693
+    ===================================== */
+
+    const idPatterns = [
+
+        /\b[A-Z]{2,4}\d{6,12}\b/i,
+
+        /\b[A-Z]{2,4}[-\s]?\d{6,12}\b/i,
+
+        /\bCA\d{6,12}\b/i
+
+    ];
+
+
+    for (
+        const pattern
+        of idPatterns
+    ) {
+
+        const match =
+            fullText.match(
+                pattern
+            );
+
+
+        if (match) {
+
+            id =
+                match[0]
+                    .replace(
+                        /\s+/g,
+                        ""
+                    )
+                    .replace(
+                        /-/g,
+                        ""
+                    )
+                    .toUpperCase();
+
+
+            break;
+
+        }
+
+    }
+
+
+    /* =====================================
+       FIND COURSE
+       
+       Target:
+       BSIT
+    ===================================== */
+
+    const coursePatterns = [
+
+        /\bBSIT\b/i,
+
+        /\bBS\s*IT\b/i,
+
+        /\bBS-IT\b/i,
+
+        /\bB\s*S\s*I\s*T\b/i
+
+    ];
+
+
+    for (
+        const pattern
+        of coursePatterns
+    ) {
+
+        const match =
+            fullText.match(
+                pattern
+            );
+
+
+        if (match) {
+
+            course =
+                "BSIT";
+
+
+            break;
+
+        }
+
+    }
+
+
+    /* =====================================
+       FIND NAME
+       
+       Target:
+       RAVENA, HAWY
+    ===================================== */
+
+    for (
+        const line
+        of lines
+    ) {
+
+        /*
+            Surname, First Name
+
+            Example:
+            RAVENA, HAWY
+        */
+
+        if (
+            /^[A-ZÀ-ÖØ-Ýa-zà-öø-ÿ' -]+,\s*[A-ZÀ-ÖØ-Ýa-zà-öø-ÿ' -]+$/
+                .test(line)
+        ) {
+
+            name =
+                line
+                    .replace(
+                        /\s+/g,
+                        " "
+                    )
+                    .toUpperCase();
+
+
+            break;
+
+        }
+
+    }
+
+
+    /* =====================================
+       FALLBACK NAME DETECTION
+    ===================================== */
+
+    if (!name) {
+
+        for (
+            const line
+            of lines
+        ) {
+
+            const upper =
+                line.toUpperCase();
+
+
+            /*
+                Ignore BSIT
+            */
+
+            if (
+                upper === "BSIT" ||
+                upper === "BS IT" ||
+                upper === "BS-IT"
+            ) {
+
+                continue;
+
+            }
+
+
+            /*
+                Ignore lines
+                containing numbers
+            */
+
+            if (
+                /\d/.test(line)
+            ) {
+
+                continue;
+
+            }
+
+
+            /*
+                Name should
+                contain comma
+            */
+
+            if (
+                line.includes(",")
+            ) {
+
+                const parts =
+                    line.split(",");
+
+
+                if (
+                    parts.length >= 2 &&
+                    parts[0].trim().length >= 2 &&
+                    parts[1].trim().length >= 2
+                ) {
+
+                    name =
+                        line
+                            .replace(
+                                /\s+/g,
+                                " "
+                            )
+                            .toUpperCase();
+
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    return {
+
+        name:
+            name,
+
+        course:
+            course,
+
+        id:
+            id
+
+    };
+
+}
+
+
+
+/* =========================================
+   RECORD ATTENDANCE
+========================================= */
+
+function recordAttendance(
+
+    name,
+
+    course,
+
+    id
+
+) {
+
+    let students =
+        getStudents();
+
+
+    const now =
+        new Date();
+
+
+    const time =
+        now.toLocaleTimeString(
+            [],
+            {
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit"
+            }
+        );
+
+
+    const date =
+        now.toLocaleDateString();
+
+
+    /*
+        Check if ID
+        already exists
+    */
+
+    const existing =
+        students.find(
+            student =>
+                student.id === id
+        );
+
+
+    if (existing) {
+
+        /*
+            Update existing
+            attendance
+        */
+
+        existing.name =
+            name;
+
+        existing.course =
+            course;
+
+        existing.status =
+            "Present";
+
+        existing.time =
+            time;
+
+        existing.date =
+            date;
+
+    }
+
+    else {
+
+        students.push({
+
+            name:
+                name,
+
+            course:
+                course,
+
+            id:
+                id,
+
+            status:
+                "Present",
+
+            time:
+                time,
+
+            date:
+                date
+
+        });
+
+    }
+
+
+    saveStudents(
+        students
+    );
+
+
+    renderStudents();
+
+    updateStatistics();
+
+}
+
+
+
+/* =========================================
+   MANUAL ADD
+========================================= */
+
+function addManualStudent() {
+
+    const name =
+        document
+            .getElementById(
+                "manualName"
+            )
+            .value
+            .trim();
+
+
+    const course =
+        document
+            .getElementById(
+                "manualCourse"
+            )
+            .value
+            .trim();
+
+
+    const id =
+        document
+            .getElementById(
+                "manualID"
+            )
+            .value
+            .trim();
+
+
+    if (
+        !name ||
+        !course ||
+        !id
+    ) {
+
+        alert(
+            "Please enter the student name, course, and ID number."
+        );
+
+        return;
+
+    }
+
+
+    recordAttendance(
+
+        name.toUpperCase(),
+
+        course.toUpperCase(),
+
+        id.toUpperCase()
+
+    );
+
+
+    document
+        .getElementById(
+            "manualName"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "manualID"
+        )
+        .value = "";
+
+
+    statusText.innerText =
+        "Student added successfully.";
+
+}
+
+
+
+/* =========================================
+   DELETE STUDENT
+========================================= */
+
+function deleteStudent(
+    id
+) {
+
+    if (
+        !confirm(
+            "Delete this attendance record?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    let students =
+        getStudents();
+
+
+    students =
+        students.filter(
+            student =>
+                student.id !== id
+        );
+
+
+    saveStudents(
+        students
+    );
+
+
+    renderStudents();
+
+    updateStatistics();
+
+}
+
+
+
+/* =========================================
+   SEARCH + TABLE
+========================================= */
+
+function renderStudents() {
+
+    const table =
+        document.getElementById(
+            "studentTable"
+        );
+
+
+    const search =
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    let students =
+        getStudents();
+
+
+    if (search) {
+
+        students =
+            students.filter(
+                student =>
+
+                    student.name
+                        .toLowerCase()
+                        .includes(
+                            search
+                        )
+
+                    ||
+
+                    student.course
+                        .toLowerCase()
+                        .includes(
+                            search
+                        )
+
+                    ||
+
+                    student.id
+                        .toLowerCase()
+                        .includes(
+                            search
+                        )
+            );
+
+    }
+
+
+    if (
+        students.length === 0
+    ) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    class="empty-message"
+                >
+                    No attendance records found.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        students
+            .map(
+                (
+                    student,
+                    index
+                ) => `
+
+                    <tr>
+
+                        <td>
+                            ${index + 1}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                student.name
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                student.course
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                student.id
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span class="present">
+                                Present
+                            </span>
+
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                student.time
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                student.date
+                            )}
+                        </td>
+
+                        <td>
+
+                            <button
+                                class="delete-btn"
+                                onclick="deleteStudent('${escapeAttribute(student.id)}')"
+                            >
+                                DELETE
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                `
+            )
+            .join("");
+
+}
+
+
+
+/* =========================================
+   STATISTICS
+========================================= */
+
+function updateStatistics() {
+
+    const students =
+        getStudents();
+
+
+    document.getElementById(
+        "totalStudents"
+    ).innerText =
+        students.length;
+
+
+    const present =
+        students.filter(
+            student =>
+                student.status ===
+                "Present"
+        ).length;
+
+
+    document.getElementById(
+        "presentStudents"
+    ).innerText =
+        present;
+
+
+    /*
+        This version records only
+        students who have attended.
+
+        Therefore absent is 0 unless
+        a master student list is added.
+    */
+
+    document.getElementById(
+        "absentStudents"
+    ).innerText =
+        0;
+
+}
+
+
+
+/* =========================================
+   SECURITY
+========================================= */
+
+function escapeHTML(
+    text
+) {
+
+    return String(text)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttribute(
+    text
+) {
+
+    return String(text)
+
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+
+        .replace(
+            /'/g,
+            "\\'"
+        );
+
+}
+
+
+
+/* =========================================
+   INITIALIZE
+========================================= */
+
+renderStudents();
+
+updateStatistics();
+
+
+
+/* =========================================
+   STOP CAMERA WHEN PAGE CLOSES
+========================================= */
+
+window.addEventListener(
+    "beforeunload",
+    function() {
+
+        stopCamera(false);
+
+    }
+);
+
+</script>
+
+</body>
+</html>
